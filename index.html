@@ -49,6 +49,9 @@
       --noteW: 78px;
       --noteH: 44px;
 
+      /* ✅ unify token “face” height so 5¢ / 10¢ / $1 align with $10 / $100 */
+      --tokenH: 44px;
+
       /* Animation */
       --moveDur: 1400ms;
       --regroupDur: 1100ms;
@@ -306,29 +309,18 @@
     .fitBox{ transform-origin:center; will-change: transform; }
     .pile{ width:100%; height:100%; transform-origin:center; will-change: transform; }
 
-    /* Pile layout: 5 left, 4 right */
+    /* ✅ single straight line (single column) */
     .pileTwoCol{
-      --colGap: 18px;
       --rowGap: 10px;
-      --discScale: 1;
-      display:grid;
-      grid-template-columns: max-content max-content;
-      column-gap: var(--colGap);
-      align-items:end;
-      justify-content:center;
-      align-content:center;
-      height: 100%;
-    }
-    .pileTwoCol .colL,
-    .pileTwoCol .colR{
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:flex-end;
       gap: var(--rowGap);
+      height: 100%;
     }
-    .pileTwoCol[data-place^="d"]{ --colGap: 14px; --rowGap: 8px; }
-    .pileTwoCol[data-place^="c"]{ --colGap: 14px; --rowGap: 8px; }
+    .pileTwoCol[data-place^="d"]{ --rowGap: 8px; }
+    .pileTwoCol[data-place^="c"]{ --rowGap: 8px; }
 
     .token{
       display:inline-block;
@@ -336,9 +328,15 @@
       pointer-events:none;
     }
 
+    /* ✅ normalize ALL token graphics to same “face” height */
+    .coin,
+    .noteCard,
+    .coinOct{
+      height: var(--tokenH);
+    }
+
     .coin{
       width: var(--coin);
-      height: var(--coin);
       border-radius:50%;
       display:grid;
       place-items:center;
@@ -394,7 +392,6 @@
 
     .noteCard{
       width: var(--noteW);
-      height: var(--noteH);
       border-radius: 14px;
       border:2px solid rgba(15,23,42,.16);
       background:
@@ -449,9 +446,9 @@
         linear-gradient(135deg, rgba(167,139,250,.20), rgba(59,130,246,.10));
     }
 
+    /* ✅ $1 coin resized to SAME “face” height as $10/$100 and 5¢/10¢ */
     .coinOct{
-      width: calc(var(--coin) * 1.15);
-      height: calc(var(--coin) * 1.15);
+      width: var(--noteH);
       display:grid;
       place-items:center;
       font-weight:1000;
@@ -468,19 +465,19 @@
       isolation:isolate;
       line-height:1;
       text-align:center;
-      padding-top: 1px;
+      padding-top: 0;
     }
     .coinOct:before{
       content:"";
       position:absolute;
-      inset: 8px;
+      inset: 6px;
       clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
       border:2px dashed rgba(15,23,42,.16);
       opacity:.9;
       pointer-events:none;
     }
     .coinOct > *{ position:relative; z-index:2; }
-    .coinOct span{ font-size: calc(var(--coinFont) * 1.05); }
+    .coinOct span{ font-size: calc(var(--coinFont) * 1.00); }
     .coinOct small{
       display:block;
       font-size:10px;
@@ -620,37 +617,31 @@
     }
 
     .panelBody{
-  display:grid;
-  grid-template-rows: 250px auto; /* ✅ smaller working area */
-  gap: 14px;                      /* ✅ tighter spacing */
-  padding: 12px 14px 14px;
-  min-height:0;
-}
-.stack{ justify-items: start; }
+      display:grid;
+      grid-template-rows: 250px auto;
+      gap: 14px;
+      padding: 12px 14px 14px;
+      min-height:0;
+    }
+    .stack{ justify-items: start; }
 
-
-    /* ✅ keep everything inside the teaching panel */
-   .algoBox{
-  border-radius: 18px;
-  background:#fff;
-  border: 1px solid var(--line);
-  box-shadow: 0 10px 18px rgba(0,0,0,.08);
-  overflow: hidden;       /* ✅ keep inside */
-  display:grid;
-  place-items:center;
-  padding: 0px;     /* ✅ less padding */
-  padding-left: -10px;   /* smaller = move working more left */
-
-  height: 300px;          /* ✅ smaller box */
-}
-
+    .algoBox{
+      border-radius: 18px;
+      background:#fff;
+      border: 1px solid var(--line);
+      box-shadow: 0 10px 18px rgba(0,0,0,.08);
+      overflow: hidden;
+      display:grid;
+      place-items:center;
+      padding: 0px;
+      height: 300px;
+    }
 
     .algoFit{
-  transform-origin: center;
-  will-change: transform;
-  transform: translateY(120px); /* ✅ move working up */
-}
-
+      transform-origin: center;
+      will-change: transform;
+      transform: translateY(120px);
+    }
 
     .pvLabels{
       display:grid;
@@ -682,7 +673,6 @@
       border: 2px solid rgba(59,130,246,.28);
     }
 
-    /* ✅ aligned $ column + same size */
     .stack{
       display:grid;
       grid-template-columns: 54px auto;
@@ -814,11 +804,12 @@
     .stepCard{
       border: 2px solid rgba(245,158,11,.75);
       border-radius: 18px;
-      margin: 12px 12px 10px;
+      margin: 40px 12px 10px;
       padding: 12px 12px;
       display:grid;
       gap: 6px;
       background:#fff;
+      margin-bottom: 40px;
     }
     .stepTitle{
       font-weight:1000;
@@ -942,7 +933,7 @@
       border-radius: 18px;
       border: 2px dashed rgba(14,165,233,.55);
       background: linear-gradient(180deg, rgba(224,242,254,.65), rgba(255,255,255,.9));
-      padding: 12px 12px;
+      padding: 20px;
       display:grid;
       gap: 10px;
     }
@@ -1010,21 +1001,21 @@
       animation: panelPulse 900ms ease-in-out 0s 2;
       border-color: rgba(14,165,233,.55) !important;
     }
-.moneyInput{
-  position: relative;
-}
-.moneyPrefix{
-  position:absolute;
-  left:12px;
-  top:50%;
-  transform: translateY(-50%);
-  font-weight:1000;
-  color:#0f172a;
-  opacity:.9;
-}
-.moneyInput input{
-  padding-left: 28px; /* space for $ */
-}
+    .moneyInput{
+      position: relative;
+    }
+    .moneyPrefix{
+      position:absolute;
+      left:12px;
+      top:50%;
+      transform: translateY(-50%);
+      font-weight:1000;
+      color:#0f172a;
+      opacity:.9;
+    }
+    .moneyInput input{
+      padding-left: 28px;
+    }
 
     .credit{
       position: fixed;
@@ -1036,17 +1027,18 @@
       z-index: 5;
     }
 
-   @media (max-width: 980px){
-  .wrap{ grid-template-columns: 1fr; }
-  .algoBox{ height: 260px; }
-  .panelBody{ grid-template-rows: 330px auto; }
-}
+    @media (max-width: 980px){
+      .wrap{ grid-template-columns: 1fr; }
+      .algoBox{ height: 260px; }
+      .panelBody{ grid-template-rows: 330px auto; }
+    }
 
     @media (max-width: 640px){
       :root{
         --gap: 10px;
         --algoColW: 44px;
         --algoGap: 10px;
+        --tokenH: 44px;
       }
 
       .title .big{ font-size: 16px; }
@@ -1064,14 +1056,11 @@
         height: 330px;
         min-height: 240px;
         padding: 10px;
-       
       }
 
       .digitsCol{ font-size: 40px; }
       .moneySign, .moneySign.plus{ font-size: 36px; width: 46px; }
-      .stack{ grid-template-columns: 15px auto;
-       gap: 0px;
-      }
+      .stack{ grid-template-columns: 15px auto; gap: 0px; }
 
       .resBox{ height: 44px; font-size: 26px; border-radius: 14px; }
 
@@ -1202,18 +1191,16 @@
               <div class="childBadge">Try: <span id="childEq">$12.75 + $8.60</span></div>
             </div>
 
-           <div class="childGrid">
-  <div>
-    <label>Your answer (2 d.p., e.g., 0.80, 21.35)</label>
-
-    <div class="moneyInput">
-      <span class="moneyPrefix">$</span>
-      <input id="childAns" type="text" inputmode="decimal" placeholder="0.00"/>
-    </div>
-  </div>
-  <button class="btn primary" id="btnChildCheck">Check ✅</button>
-</div>
-
+            <div class="childGrid">
+              <div>
+                <label>Your answer (2 d.p., e.g., 0.80, 21.35)</label>
+                <div class="moneyInput">
+                  <span class="moneyPrefix">$</span>
+                  <input id="childAns" type="text" inputmode="decimal" placeholder="0.00"/>
+                </div>
+              </div>
+              <button class="btn primary" id="btnChildCheck">Check ✅</button>
+            </div>
 
             <div class="childMsg" id="childMsg"></div>
           </div>
@@ -1237,13 +1224,11 @@
                   <option value="99.95">Up to $99.95</option>
                   <option value="199.95">Up to $199.95</option>
                   <option value="499.95">Up to $499.95</option>
-                  <option value="999.95" selected>Up to $999.95</option>
                 </select>
               </div>
               <button class="btn" id="btnRandom">🎲 Random Amounts</button>
             </div>
 
-            <!-- ✅ Step order option (enabled only when NO regrouping) -->
             <div class="fields">
               <div>
                 <label>Step order (no regrouping only)</label>
@@ -1301,7 +1286,6 @@
                 <button class="btn" id="btnSwap">Swap A/B</button>
               </div>
 
-              <!-- ✅ Coins option removed; keep a disabled label -->
               <div class="seg" aria-label="Display mode">
                 <button type="button" id="btnBlocks" class="active" disabled>Notes &amp; Coins</button>
               </div>
@@ -1339,11 +1323,11 @@
   const DOT_INDEX = COLS.indexOf("dot");
 
   const BASE = {
-    c5:  2,    // 2×5¢ -> 1×10¢
-    c10: 10,   // 10×10¢ -> 1×$1
-    d1:  10,   // 10×$1  -> 1×$10
-    d10: 10,   // 10×$10 -> 1×$100
-    d100:10,   // 10×$100-> 1×$1000 (not displayed)
+    c5:  2,
+    c10: 10,
+    d1:  10,
+    d10: 10,
+    d100:10,
     d1000:10
   };
 
@@ -1748,33 +1732,17 @@
   /* =========================
      Pile layout helpers
      ========================= */
-  function ensureTwoColStructure(pileEl){
-    if (!pileEl) return;
-    if (pileEl.querySelector(".colL")) return;
-    const L = document.createElement("div"); L.className = "colL";
-    const R = document.createElement("div"); R.className = "colR";
-    pileEl.appendChild(L); pileEl.appendChild(R);
-  }
+  function ensureTwoColStructure(pileEl){ /* no-op */ }
 
   function flattenTokens(pileEl){
     if (!pileEl) return [];
-    const L = pileEl.querySelector(".colL");
-    const R = pileEl.querySelector(".colR");
-    const a = L ? Array.from(L.children) : [];
-    const b = R ? Array.from(R.children) : [];
-    const extras = Array.from(pileEl.children).filter(
-      n => !n.classList?.contains("colL") && !n.classList?.contains("colR")
+    return Array.from(pileEl.children).filter(
+      n => n && n.nodeType === 1 && n.classList.contains("token")
     );
-    return [...a, ...b, ...extras].filter(n => n && n.nodeType === 1 && n.classList.contains("token"));
   }
 
   function putTokenTwoCol(pileEl, tokenEl){
-    ensureTwoColStructure(pileEl);
-    const L = pileEl.querySelector(".colL");
-    const R = pileEl.querySelector(".colR");
-    if (L.children.length < 5) L.appendChild(tokenEl);
-    else if (R.children.length < 4) R.appendChild(tokenEl);
-    else R.appendChild(tokenEl);
+    pileEl.appendChild(tokenEl);
   }
 
   function repackPile(pileEl, placeKey){
@@ -1938,7 +1906,7 @@
   function fitAlgo(){
     ui.algoFit.style.transform = "scale(1)";
     const box = ui.algoFit.parentElement;
-    const availW = box.clientWidth - 18;  // small safety margin
+    const availW = box.clientWidth - 18;
     const availH = box.clientHeight - 18;
     const w = ui.algoFit.scrollWidth;
     const h = ui.algoFit.scrollHeight;
@@ -2036,8 +2004,7 @@
 
   const renPref = { c5:"any", c10:"any", d1:"any", d10:"any" };
 
-  /* ✅ step order mode */
-  let stepOrderMode = "centsFirst"; // "centsFirst" | "dollarsFirst"
+  let stepOrderMode = "centsFirst";
 
   function resetChildPanel(){
     ui.childEq.textContent = `${formatMoneyWith$(A)} + ${formatMoneyWith$(B)}`;
@@ -2052,7 +2019,7 @@
     const dollars = Math.floor(cents/100);
     const cc = cents % 100;
     const c10 = Math.floor(cc/10);
-    const c1 = cc % 10; // 0 or 5 only
+    const c1 = cc % 10;
     return {
       d100:  Math.floor(dollars/100)%10,
       d10:   Math.floor(dollars/10)%10,
@@ -2068,7 +2035,7 @@
     const dollars = Math.floor(cents/100);
     const cc = cents % 100;
     const c10 = Math.floor(cc/10);
-    const c1 = cc % 10; // 0 or 5 only
+    const c1 = cc % 10;
     return {
       d100:  Math.floor(dollars/100)%10,
       d10:   Math.floor(dollars/10)%10,
@@ -2156,9 +2123,7 @@
       pile.dataset.place = placeKey;
 
       if (placeKey === "dot"){
-        pile.innerHTML = `<div class="dotSimple" aria-label="decimal point"></div>`;
-      } else {
-        pile.innerHTML = `<div class="colL"></div><div class="colR"></div>`;
+        pile.innerHTML = ``;
       }
 
       fit.appendChild(pile);
@@ -2183,7 +2148,6 @@
 
     renderAlgorithm(A, B);
 
-    /* ✅ Enable dollars-first ONLY when no regrouping at all */
     const okNoRegroup = isNoRegrouping(A, B);
     if (ui.orderSel){
       ui.orderSel.disabled = !okNoRegroup;
@@ -2209,7 +2173,6 @@
     count = Math.max(0, Math.min(9, count|0));
 
     pileEl.className = "pile pileTwoCol";
-    ensureTwoColStructure(pileEl);
     for (let i=0;i<count;i++){
       const tok = makeTokenEl(placeKey);
       putTokenTwoCol(pileEl, tok);
@@ -2405,7 +2368,6 @@
     }
   }
 
-  /* ✅ Step places depend on chosen order (only allowed when no regrouping) */
   function getStepPlaces(){
     const centsFirst  = ["c5","c10","d1","d10","d100"];
     const dollarsFirst= ["d1","d10","d100","c10","c5"];
@@ -2606,7 +2568,6 @@
     return out;
   }
 
-  /* ✅ no-regrouping detector (enables dollars-first option) */
   function isNoRegrouping(aC, bC){
     const co = computeCarryOutsMoney(aC, bC);
     return (co.c5===0 && co.c10===0 && co.d1===0 && co.d10===0 && co.d100===0);
@@ -2661,21 +2622,19 @@
       return;
     }
 
-    // ✅ Must be exactly 2 decimal places (e.g., 0.80, 21.35)
-const s = raw.replace(/\$/g,"").replace(/,/g,"").trim();
-if (!/^\d{1,4}\.\d{2}$/.test(s)){
-  setChildMsg("bad", "Please type 2 decimal places (e.g., 0.80, 21.35).");
-  playClick();
-  return;
-}
+    const s = raw.replace(/\$/g,"").replace(/,/g,"").trim();
+    if (!/^\d{1,4}\.\d{2}$/.test(s)){
+      setChildMsg("bad", "Please type 2 decimal places (e.g., 0.80, 21.35).");
+      playClick();
+      return;
+    }
 
-const parsed = parseMoneyToCents(s);
-if (!parsed.ok){
-  setChildMsg("bad", "Please type 2 decimal places (e.g., 0.80, 21.35).");
-  playClick();
-  return;
-}
-
+    const parsed = parseMoneyToCents(s);
+    if (!parsed.ok){
+      setChildMsg("bad", "Please type 2 decimal places (e.g., 0.80, 21.35).");
+      playClick();
+      return;
+    }
 
     const guess = parsed.cents;
     const correct = clampCents(A + B);
@@ -2779,4 +2738,3 @@ if (!parsed.ok){
 
 </body>
 </html>
-
