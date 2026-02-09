@@ -1317,7 +1317,9 @@
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
-
+ // ✅ PUT OFFSET HERE (near the top)
+  const ALGO_DOT_OFFSET_X = 10;  // move right (px)
+  const ALGO_DOT_OFFSET_Y = 10;  // move down  (px)
   /* =========================
      MONEY MODEL (no 1¢)
      - amounts are in CENTS (integer)
@@ -1965,14 +1967,15 @@
     const yB = midY(ui.rowB);
     const yR = midY(ui.resRow);
 
-    dotA.style.left = xA + "px";
-    dotA.style.top  = yA + "px";
+     dotA.style.left = (xA + ALGO_DOT_OFFSET_X) + "px";
+    dotA.style.top  = (yA + ALGO_DOT_OFFSET_Y) + "px";
 
-    dotB.style.left = xA + "px";
-    dotB.style.top  = yB + "px";
 
-    dotR.style.left = xA + "px";
-    dotR.style.top  = yR + "px";
+    dotB.style.left = (xA + ALGO_DOT_OFFSET_X) + "px";
+    dotB.style.top  = (yB + ALGO_DOT_OFFSET_Y) + "px";
+
+    dotR.style.left = (xA + ALGO_DOT_OFFSET_X) + "px";
+    dotR.style.top  = (yR + ALGO_DOT_OFFSET_Y) + "px";
   }
 
   /* =========================
