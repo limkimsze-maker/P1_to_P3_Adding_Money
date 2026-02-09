@@ -63,7 +63,7 @@
       --maxW: 1320px;
 
       /* Algorithm column alignment */
-      --colCount: 6;          /* set by JS */
+      --colCount: 5;          /* set by JS */
       --algoColW: 54px;
       --algoGap: 14px;
 
@@ -279,9 +279,6 @@
       box-shadow: inset 0 0 0 3px rgba(34,197,94,.55);
       border-color: rgba(34,197,94,.65);
     }
-
-    /* ✅ Hide the dot on the mat AFTER done (so no confusing extra dot) */
-    .mat.together .dotSimple{ opacity:0; }
 
     .zones{
       position:absolute;
@@ -501,12 +498,16 @@
       z-index:1;
     }
 
-    /* ✅ Big black dot (not dot-in-circle) */
+    /* ✅ Big black dot (LOCKED / permanent) */
     .dotSimple{
       width: 18px;
       height: 18px;
       border-radius: 50%;
       background: #000;
+      position:absolute;
+      z-index: 10;
+      pointer-events:none;
+      opacity: 1 !important; /* ✅ lock dot even when "together" */
     }
 
     .animLayer{
@@ -740,10 +741,6 @@
       display:block;
     }
     .digitsCol .blank{ opacity:0; }
-    .digitsCol .dotCell{
-      font-weight: 1000;
-      color:#0f172a;
-    }
 
     .barLine{
       height: 6px;
@@ -781,16 +778,6 @@
       border-color: transparent;
       box-shadow:none;
       color: transparent;
-    }
-    .resDot{
-      width: var(--algoColW);
-      height: 50px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:1000;
-      font-size: 34px;
-      color:#0f172a;
     }
 
     .lowerPanel{
@@ -1313,14 +1300,17 @@
      MONEY MODEL (no 1¢)
      - amounts are in CENTS (integer)
      - last digit of cents is always 0 or 5 (i.e. step = 5 cents)
-     - columns shown: $100 $10 $1 . 10¢ 5¢  (✅ no thousands)
+     - columns shown: $100 $10 $1 |dot| 10¢ 5¢
+     ✅ Dot is NOT a column anymore (just a locked visual marker).
      ========================= */
   const STEP_CENTS = 5;
   const MAX_DOLLARS = 999;
   const MAX_CENTS = MAX_DOLLARS * 100 + 95;
 
-  const COLS = ["d100","d10","d1","dot","c10","c5"]; // left → right
-  const DOT_INDEX = COLS.indexOf("dot");
+  // ✅ FINAL COLUMNS (left → right): d100, d10, d1, c10, c5
+  const COLS = ["d100","d10","d1","c10","c5"];
+  // ✅ Visual dot BETWEEN d1 (index 2) and c10 (index 3)
+  const DOT_INDEX = 3; // boundary position (after 3 columns)
 
   const BASE = {
     c5:  2,
@@ -1337,7 +1327,6 @@
     d1:   { label:"ones of dollars",      short:"$1"    },
     c10:  { label:"tens of cents",        short:"10¢"   },
     c5:   { label:"five cents",           short:"5¢"    },
-    dot:  { label:"dot",                  short:"."     },
   };
 
   const ui = {
@@ -2025,8 +2014,7 @@
       d10:   Math.floor(dollars/10)%10,
       d1:    dollars%10,
       c10:   c10,
-      c5:    (c1 === 5) ? 1 : 0,
-      dot:   0
+      c5:    (c1 === 5) ? 1 : 0
     };
   }
 
@@ -2041,8 +2029,7 @@
       d10:   Math.floor(dollars/10)%10,
       d1:    dollars%10,
       c10:   c10,
-      c5:    c1,
-      dot:   "."
+      c5:    c1
     };
   }
 
@@ -2050,7 +2037,7 @@
     step = 0;
     carry = {};
     resultDigits = {};
-    COLS.forEach(k => resultDigits[k] = (k === "dot") ? "." : null);
+    COLS.forEach(k => resultDigits[k] = null);
 
     ui.eqAns.textContent = "$?";
     ui.eqHint.textContent = "Click Next Step";
@@ -2070,6 +2057,19 @@
   /* =========================
      Render (mat + algorithm)
      ========================= */
+  function ensureLockedDot(){
+    const existing = ui.mat.querySelector("#lockedDot");
+    if (existing) existing.remove();
+
+    const dot = document.createElement("div");
+    dot.id = "lockedDot";
+    dot.className = "dotSimple";
+    dot.style.left = `calc(${(DOT_INDEX / COLS.length) * 100}% - 9px)`;
+    dot.style.top = "50%";
+    dot.style.transform = "translateY(-50%)";
+    ui.mat.appendChild(dot);
+  }
+
   function renderAll(){
     A = clampCents(A);
     B = clampCents(B);
@@ -2122,10 +2122,6 @@
       pile.className = "pile pileTwoCol";
       pile.dataset.place = placeKey;
 
-      if (placeKey === "dot"){
-        pile.innerHTML = ``;
-      }
-
       fit.appendChild(pile);
       inner.appendChild(fit);
       z.appendChild(inner);
@@ -2141,10 +2137,12 @@
     const cb = countsFromCents(B);
 
     COLS.forEach(k => {
-      if (k === "dot") return;
       fillPile(zoneMap.top[k].pile, k, ca[k] ?? 0);
       fillPile(zoneMap.bottom[k].pile, k, cb[k] ?? 0);
     });
+
+    // ✅ locked dot on the mat (permanent)
+    ensureLockedDot();
 
     renderAlgorithm(A, B);
 
@@ -2186,13 +2184,13 @@
     const dollarsSpan = document.createElement("div");
     dollarsSpan.className = "band dollars";
     dollarsSpan.textContent = "dollars";
-    dollarsSpan.style.gridColumn = `1 / ${DOT_INDEX+1}`;
+    dollarsSpan.style.gridColumn = `1 / ${DOT_INDEX+1}`; // 1..3
     ui.pvLabels.appendChild(dollarsSpan);
 
     const centsSpan = document.createElement("div");
     centsSpan.className = "band cents";
     centsSpan.textContent = "cents";
-    centsSpan.style.gridColumn = `${DOT_INDEX+2} / ${COLS.length+1}`;
+    centsSpan.style.gridColumn = `${DOT_INDEX+1} / ${COLS.length+1}`; // 4..5
     ui.pvLabels.appendChild(centsSpan);
 
     const da = digitsFromCents(aC);
@@ -2216,10 +2214,6 @@
     const makeRowSpans = (digitsMap, firstDollarColIndex) => {
       const out = [];
       COLS.forEach((k, idx) => {
-        if (k === "dot"){
-          out.push({ ch: ".", blank:false, isDot:true });
-          return;
-        }
         if (idx < DOT_INDEX){
           const val = digitsMap[k] ?? 0;
           const blank = (idx < firstDollarColIndex) && (val === 0);
@@ -2240,7 +2234,6 @@
       const sp = document.createElement("span");
       sp.textContent = obj.ch;
       if (obj.blank) sp.classList.add("blank");
-      if (obj.isDot) sp.classList.add("dotCell");
       ui.rowA.appendChild(sp);
     });
 
@@ -2249,7 +2242,6 @@
       const sp = document.createElement("span");
       sp.textContent = obj.ch;
       if (obj.blank) sp.classList.add("blank");
-      if (obj.isDot) sp.classList.add("dotCell");
       ui.rowB.appendChild(sp);
     });
 
@@ -2263,13 +2255,6 @@
 
     ui.resRow.innerHTML = "";
     COLS.forEach((k) => {
-      if (k === "dot"){
-        const d = document.createElement("div");
-        d.className = "resDot";
-        d.textContent = ".";
-        ui.resRow.appendChild(d);
-        return;
-      }
       const b = document.createElement("div");
       b.className = "resBox mystery";
       b.id = "res_" + k;
@@ -2288,7 +2273,7 @@
       const sp = spans[idx];
       if (!sp) return;
 
-      if (!anyCarry || k === "dot"){
+      if (!anyCarry){
         sp.textContent = "";
         sp.className = "blank";
         return;
@@ -2321,7 +2306,6 @@
     })();
 
     COLS.forEach((k, idx) => {
-      if (k === "dot") return;
       const box = document.getElementById("res_" + k);
       const v = resultDigits[k];
       if (!box) return;
@@ -2362,9 +2346,13 @@
 
       ui.ansWordsText.textContent = moneyToWordsSG(sum);
       ui.ansWords.style.display = "block";
+
+      // ✅ keep dot visible even when together
+      ensureLockedDot();
     } else {
       ui.eqAns.textContent = "$?";
       ui.ansWords.style.display = "none";
+      ensureLockedDot();
     }
   }
 
@@ -2528,12 +2516,14 @@
 
     fitAllPiles();
     fitAlgo();
+    ensureLockedDot();
 
     const done = order.every(k => resultDigits[k] !== null);
     if (done){
       ui.btnDone.disabled = false;
       ui.btnNext.disabled = true;
       ui.mat.classList.add("together");
+      ensureLockedDot();
     }
 
     busy = false;
@@ -2674,6 +2664,7 @@
       renderStepCard();
       fitAllPiles();
       fitAlgo();
+      ensureLockedDot();
     });
   }
 
@@ -2724,6 +2715,7 @@
     requestAnimationFrame(() => {
       fitAllPiles();
       fitAlgo();
+      ensureLockedDot();
     });
   });
 
