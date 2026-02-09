@@ -108,6 +108,23 @@
       min-width: 140px;
     }
     .title .big{ font-size: 18px; }
+/* ✅ Algorithm decimal dots (overlay) */
+.algoBox{ position: relative; }
+.algoDotLayer{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index: 5; /* above digits + boxes */
+}
+.algoDot{
+  position:absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #dc2626;
+  box-shadow: 0 6px 12px rgba(0,0,0,.18);
+  transform: translate(-50%, -50%);
+}
 
     .actions{
       display:flex;
@@ -1139,6 +1156,11 @@
       <div class="panelBody">
         <div class="algoBox">
           <div class="algoFit" id="algoFit">
+            <div class="algoDotLayer" id="algoDotLayer" aria-hidden="true">
+            <div class="algoDot" id="algoDotA"></div>
+            <div class="algoDot" id="algoDotB"></div>
+            <div class="algoDot" id="algoDotR"></div>
+            </div>
             <div class="stack">
               <div></div>
               <div class="pvLabels" id="pvLabels"></div>
@@ -1330,6 +1352,7 @@
   };
 
   const ui = {
+    algoDotLayer: $("algoDotLayer"),
     pillA: $("pillA"), pillB: $("pillB"),
     eqA: $("eqA"), eqB: $("eqB"), eqAns: $("eqAns"), eqHint: $("eqHint"),
     ansWords: $("ansWords"), ansWordsText: $("ansWordsText"),
@@ -1902,6 +1925,54 @@
     if (w < 1 || h < 1) return;
     const s = Math.min(1, availW / w, availH / h);
     ui.algoFit.style.transform = `scale(${s})`;
+    requestAnimationFrame(positionAlgoDots);
+  }
+  function positionAlgoDots(){
+    const layer = ui.algoDotLayer;
+    if (!layer) return;
+
+    const dotA = document.getElementById("algoDotA");
+    const dotB = document.getElementById("algoDotB");
+    const dotR = document.getElementById("algoDotR");
+    if (!dotA || !dotB || !dotR) return;
+
+    // Need two cells around the boundary: d1 (index DOT_INDEX-1) and c10 (index DOT_INDEX)
+    const aCells = ui.rowA ? Array.from(ui.rowA.children) : [];
+    const bCells = ui.rowB ? Array.from(ui.rowB.children) : [];
+    const rCells = ui.resRow ? Array.from(ui.resRow.children) : [];
+
+    if (aCells.length < DOT_INDEX+1 || bCells.length < DOT_INDEX+1 || rCells.length < DOT_INDEX+1) return;
+
+    const layerR = layer.getBoundingClientRect();
+
+    const midX = (leftEl, rightEl) => {
+      const L = leftEl.getBoundingClientRect();
+      const R = rightEl.getBoundingClientRect();
+      const x = (L.right + R.left) / 2;
+      return x - layerR.left;
+    };
+
+    const midY = (rowEl) => {
+      const rr = rowEl.getBoundingClientRect();
+      return (rr.top + rr.height/2) - layerR.top;
+    };
+
+    // X position (same for all 3 dots)
+    const xA = midX(aCells[DOT_INDEX-1], aCells[DOT_INDEX]);
+
+    // Y positions per row
+    const yA = midY(ui.rowA);
+    const yB = midY(ui.rowB);
+    const yR = midY(ui.resRow);
+
+    dotA.style.left = xA + "px";
+    dotA.style.top  = yA + "px";
+
+    dotB.style.left = xA + "px";
+    dotB.style.top  = yB + "px";
+
+    dotR.style.left = xA + "px";
+    dotR.style.top  = yR + "px";
   }
 
   /* =========================
@@ -2262,7 +2333,8 @@
       ui.resRow.appendChild(b);
     });
 
-    requestAnimationFrame(fitAlgo);
+       requestAnimationFrame(() => { fitAlgo(); positionAlgoDots(); });
+
   }
 
   function updateCarryDisplay(){
@@ -2716,6 +2788,7 @@
       fitAllPiles();
       fitAlgo();
       ensureLockedDot();
+        positionAlgoDots();
     });
   });
 
